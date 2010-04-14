@@ -1,0 +1,72 @@
+<?php
+class GroupsController extends AppController {
+
+	var $name = 'Groups';
+	var $helpers = array('Html', 'Form');
+    var $uses = array();
+	var $components = array('Jsax');
+
+    function beforeFilter() {
+        parent::beforeFilter();
+        $this->loadModel('Group');
+    }
+
+	function index() {
+		$this->Group->recursive = 0;
+		$this->set('groups', $this->paginate());
+	}
+
+	function view($id = null) {
+		if (!$id) {
+			$this->Session->setFlash(__('Invalid Group.', true));
+			$this->redirect(array('action'=>'index'));
+		}
+		$this->set('group', $this->Group->read(null, $id));
+	}
+
+	function add() {
+		if (!empty($this->data)) {
+			$this->Group->create();
+			if ($this->Group->save($this->data)) {
+				$this->Session->setFlash(__('The Group has been saved', true));
+				$this->redirect(array('action'=>'index'));
+			} else {
+				$this->Session->setFlash(__('The Group could not be saved. Please, try again.', true));
+			}
+		}
+		$links = $this->Group->Link->find('list');
+		$this->set(compact('links'));
+	}
+
+	function edit($id = null) {
+		if (!$id && empty($this->data)) {
+			$this->Session->setFlash(__('Invalid Group', true));
+			$this->redirect(array('action'=>'index'));
+		}
+		if (!empty($this->data)) {
+			if ($this->Group->save($this->data)) {
+				$this->Session->setFlash(__('The Group has been saved', true));
+				$this->redirect(array('action'=>'index'));
+			} else {
+				$this->Session->setFlash(__('The Group could not be saved. Please, try again.', true));
+			}
+		}
+		if (empty($this->data)) {
+			$this->data = $this->Group->read(null, $id);
+		}
+		$links = $this->Group->Link->find('list');
+		$this->set(compact('links'));
+	}
+	function delete($id = null) {
+		if(!empty($this->data)){
+			$this->Jsax->delete($this->data['Group']['id'], $this->Group);
+		}else{
+			$this->Jsax->confirmDelete($id, $this->Group);
+		}
+	}
+	function deleteBulk () {
+		$this->Jsax->deleteAll($this->Group, array("Group.id"=>$this->data['ids']));
+	}
+
+}
+?>
